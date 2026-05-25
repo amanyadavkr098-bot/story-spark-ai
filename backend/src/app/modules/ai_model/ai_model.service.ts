@@ -1,9 +1,11 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
-import { IAIModel } from "./ai_model.interface";
-import { generateWithGeminiStories } from "./ai_model.utils";
+import { IAIModel, IAlternateEndingPayload } from "./ai_model.interface";
+import { generateWithGeminiStories, generateAlternateEndingsWithGemini } from "./ai_model.utils";
 import httpStatus from "http-status";
+import { REQUEST_LIMITS } from "../../../interfaces/ai_model_request_limit";
+
 
 const AI_TIMEOUT_MS = 60000;
 const AI_FREE_TIMEOUT_MS = 10000;
@@ -12,15 +14,7 @@ const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
   const { email } = token;
   const { prompt, wordLength, numStories } = payload;
 
-  try {
-    const result = await generateWithGeminiStories(
-      prompt,
-      wordLength,
-      numStories,
-      AbortSignal.timeout(AI_TIMEOUT_MS)
-    );
-
-    if (result && result.length > 0) {
+ main
       const user = await User.findOne({ email: email });
 
       if (!user) {
@@ -57,16 +51,7 @@ const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
   }
 };
 
-const aiFreeModelGenerate = async (payload: IAIModel) => {
-  const { prompt } = payload;
-
-  try {
-    const result = await generateWithGeminiStories(
-      prompt,
-      150,
-      2,
-      AbortSignal.timeout(AI_FREE_TIMEOUT_MS)
-    );
+ main
     return result;
   } catch (error) {
     if (error instanceof Error && error.name === "TimeoutError") {
@@ -82,4 +67,7 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
 export const AiModelService = {
   aiModelGenerate,
   aiFreeModelGenerate,
+  aiModelAlternateEndings,
+  aiFreeModelAlternateEndings,
 };
+
