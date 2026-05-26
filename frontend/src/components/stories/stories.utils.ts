@@ -40,8 +40,8 @@ export const UNSELECTED_TOPIC_CLASSES = "bg-slate-700 text-slate-300";
 
 export interface ITopicData {
   title: string;
-  color?: string;
-  className?: string;
+  color: string;
+  className: string;
   selected: boolean;
 }
 
