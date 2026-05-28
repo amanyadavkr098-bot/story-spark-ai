@@ -5,7 +5,6 @@ import { IPost } from "../post/post.interface";
 import { User } from "../user/user.model";
 import { ITokenPayload } from "../../../interfaces/token";
 import mongoose from "mongoose";
-import { Document } from "mongoose";
 
 const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   const user = await User.findById(token._id);
@@ -23,7 +22,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
     query._id = { $nin: readingHistory };
   }
 
-  let recommendations: (Document & IPost)[] = [];
+
 
   // If user has preferences, try to match them
   if (readingPreferences) {
