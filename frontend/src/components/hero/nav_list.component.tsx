@@ -1,53 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
-import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
-import { Link } from "react-router-dom";
-import { USER_ROLE } from "../../constants/role";
-import logo from "../../assets/logoNew.png";
-import NotificationComponent from "../notification/notification.component";
-import { useNotifications } from "../../hooks/useNotifications";
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
+import ThemeToggle from "../theme/theme_toggle.component";
 
-const NavListComponent: React.FC = () => {
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const [isLogin, setIsLogin] = useState<boolean>(isLoggedIn());
-  const notificationMenuRef = useRef<HTMLDivElement | null>(null);
-  const {
-    notifications,
-    unreadCount,
-    isOpen,
-    toggle,
-    close,
-    markAsRead,
-  } = useNotifications();
+const NavListComponent = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
-  const user = getUserInfo();
-  const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
-
-  const handelLogout = () => {
+  const handleLogout = () => {
     removeUserInfo();
-    setIsLogin(false);
+    setLoggedIn(false);
   };
 
-  useEffect(() => {
-    setIsLogin(isLoggedIn());
-  }, []);
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.closest("[data-notification-trigger='true']")) {
-        return;
-      }
-      if (
-        notificationMenuRef.current &&
-        !notificationMenuRef.current.contains(event.target as Node)
-      ) {
-        close();
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [close]);
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `rounded-md px-3 py-2 text-sm font-semibold transition ${isActive ? "text-white bg-slate-800/70" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-white/10"}`;
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#0B1120]/80 backdrop-blur-md border-b border-white/10">
@@ -116,15 +82,6 @@ const NavListComponent: React.FC = () => {
           </button>
         </div>
       </div>
-
-      <NotificationComponent
-        notifications={notifications}
-        showNotification={isOpen}
-        setShowNotification={close}
-        unreadCount={unreadCount}
-        onMarkAsRead={markAsRead}
-      />
-
       {menuOpen && (
         <div className="lg:hidden px-5 pb-4 flex flex-col gap-3 border-t border-white/10 mt-2">
           <Link to="/" className="text-gray-400 hover:text-white py-2">HOME</Link>
@@ -152,7 +109,6 @@ const NavListComponent: React.FC = () => {
           }
         </div>
       )}
-      </div>
     </header>
   );
 };
