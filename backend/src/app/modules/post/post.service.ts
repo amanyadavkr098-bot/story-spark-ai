@@ -15,9 +15,6 @@ import { postSearchFields } from "./post.constant";
 import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 
-const MAX_SEARCH_TERM_LENGTH = 100;
-const escapeRegex = (text: string) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-
 const escapeRegex = (text: string): string => {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 };
@@ -408,12 +405,8 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   }
 
   const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
+  
   if (!postExists) {
-
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
-
-  if (!post) {
-
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
@@ -603,7 +596,7 @@ export const PostService = {
   toggleBookmark,
   updatePost,
   deletePost,
-  remixStory,       // Exposed service for AI story variations
-  translateStory,   // Exposed service for localized modifications
+  remixStory,       
+  translateStory,   
   getGenres,
 };
