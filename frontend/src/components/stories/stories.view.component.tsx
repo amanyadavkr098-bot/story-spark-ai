@@ -9,6 +9,7 @@ import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
 import StoryRemix from "../remix/StoryRemix";
 import BookmarkButton from "../BookmarkButton";
+import CardCollection from "../cards/CardCollection";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
@@ -384,6 +385,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
         ) : (
           <div className="text-center py-12 text-slate-500">No stories available.</div>
         )}
+
+        <CardCollection
+          stories={stories}
+          selectedStoryId={selectedStory?.uuid}
+          onSelectStory={setSelectedStory}
+        />
       </div>
     </div>
   );
