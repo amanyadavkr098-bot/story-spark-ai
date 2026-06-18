@@ -1,11 +1,13 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
-import { IComment, ICommentDTO, ICommentPayload, ILeanComment } from "./comment.interface";
+import { IComment, ICommentPayload } from "./comment.interface";
 import httpStatus from "http-status";
 import { Comment } from "./comment.model";
 import { startSession, Types } from "mongoose";
 import { Post } from "../post/post.model";
+import { ENUM_USER_ROLE } from "../../../enums/user";
+import { assertContentSafe } from "../../../utils/contentModeration";
 
 const createComment = async (
   payload: ICommentPayload,
@@ -22,6 +24,14 @@ const createComment = async (
   });
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
+  }
+
+  // Content moderation — block inappropriate comments before persisting
+  try {
+    assertContentSafe(payload.comment);
+  } catch (moderationError) {
+    const msg = moderationError instanceof Error ? moderationError.message : "Comment blocked by content moderation.";
+    throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, msg);
   }
 
   // Validate parent comment if parentCommentId is provided
@@ -105,14 +115,6 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   }
   
   // Replace the read-modify-write likes toggle with atomic MongoDB operators.
-  // The original pattern read likes, checked membership with includes, mutated
-  // the array, and saved. Two concurrent toggles by the same user can both pass
-  // the includes check (both see the ID absent), both push, and both save,
-  // resulting in a duplicate like entry.
-  //
-  // $addToSet adds the user ID only if it is not already present (like).
-  // $pull removes all matching entries (unlike). Both are atomic.
-  // Checking the current state first determines which operation to perform.
   const isCurrentlyLiked = await Comment.exists({
     _id: comment._id,
     likes: user._id,
@@ -140,7 +142,7 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
   }
   // Only the comment author or an admin/super-admin can delete
   const isAuthor = comment.userId.toString() === user._id.toString();
-  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  const isAdmin = role === ENUM_USER_ROLE.ADMIN || role === ENUM_USER_ROLE.SUPER_ADMIN;
   if (!isAuthor && !isAdmin) {
     throw new ApiError(
       httpStatus.FORBIDDEN,

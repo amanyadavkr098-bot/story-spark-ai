@@ -3,12 +3,13 @@ import ApiError from "../../../errors/api_error";
 import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
 import { ITokenPayload } from "../../../interfaces/token";
-import mongoose from "mongoose";
 import { IPost } from "../post/post.interface";
+
 const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   const user = await User.findById(token._id)
     .select("readingPreferences readingHistory")
     .lean();
+    
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
@@ -27,12 +28,15 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
 
   // If user has preferences, try to match them
   if (readingPreferences) {
-    const favoriteGenres = [...readingPreferences.favoriteGenres]
+    // Create copies before sorting to avoid mutating the original arrays
+    const favoriteGenres = (readingPreferences.favoriteGenres || [])
+      .slice()
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
       .map(g => g.name);
       
-    const favoriteEmotions = [...readingPreferences.favoriteEmotions]
+    const favoriteEmotions = (readingPreferences.favoriteEmotions || [])
+      .slice()
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
       .map(e => e.name);

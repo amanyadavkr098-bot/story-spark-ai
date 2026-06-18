@@ -11,6 +11,9 @@ export interface IUser {
   role: string;
   status: string;
   subscriptionType: SubscriptionType;
+  subscriptionExpiry?: Date;
+  lastPaymentId?: string;
+  lastOrderId?: string;
   postsCount: number;
   followers: Types.ObjectId[];
   following: Types.ObjectId[];
@@ -31,9 +34,6 @@ export interface IUser {
   posts: Types.ObjectId[];
   isApplyForWriter: boolean;
   tokenVersion?: number;
-  subscriptionExpiry?: Date;
-  lastPaymentId?: string;
-  lastOrderId?: string;
   gamification: {
     xp: number;
     level: number;

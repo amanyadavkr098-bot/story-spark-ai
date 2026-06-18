@@ -28,6 +28,12 @@ jest.mock("../../bookmark/bookmark.model", () => ({
   },
 }));
 
+jest.mock("../../comment/comment.model", () => ({
+  Comment: {
+    deleteMany: jest.fn().mockResolvedValue({}),
+  },
+}));
+
 const mockedPost = Post as jest.Mocked<typeof Post>;
 const mockedUser = User as jest.Mocked<typeof User>;
 
